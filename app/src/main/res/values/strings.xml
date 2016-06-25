@@ -1,0 +1,36 @@
+<resources
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">Sunshine</string>
+    <string name="action_settings">Настройки</string>
+    <string name="detail_activity_title">Подробности</string>
+    <string name="pref_location_title">Location</string>
+    <string name="pref_location_key" translatable="false">pref_location</string>
+    <string name="pref_location_default_value" translatable="false">524901</string>
+    <string name="pref_units_key" translatable="false">pref_units</string>
+    <string name="pref_units_title">Метрика температуры</string>
+    <string name="pref_units_dialog_title">Выберите метрику</string>
+
+    <string name="pref_units_default_value">metric</string>
+    <string name="action_map">Map Location</string>
+    <string name="share_action">Поделиться</string>
+
+    <string name="today">Сегодня</string>
+    <string name="tomorrow">Завтра</string>
+
+    <string name="format_full_friendly_date"><xliff:g id="day">%1$s</xliff:g>, <xliff:g id="date">%2$s</xliff:g></string>
+    <string name="format_temperature"><xliff:g id="temp">%1.0f</xliff:g>\u00B0</string>
+    <string name="format_humidity">Влажность: <xliff:g id="humidity">%1$d</xliff:g><xliff:g id="percent">%2$s</xliff:g></string>
+    <string name="format_wind_speed_and_direction">Ветер: <xliff:g id="wind">%1.0f</xliff:g> Км/ч <xliff:g id="direction">%2$s</xliff:g></string>
+    <string name="format_pressure">Давление: <xliff:g id="pressure">%1.0f</xliff:g> мм рт. ст.</string>
+
+
+    <string name="south">Ю</string>
+    <string name="north">С</string>
+    <string name="east">В</string>
+    <string name="west">З</string>
+    <string name="north_east">С-В</string>
+    <string name="north_west">С-З</string>
+    <string name="south_east">Ю-В</string>
+    <string name="south_west">Ю-З</string>
+    <string name="forecast_icon_description">Forecast icon</string>
+</resources>
