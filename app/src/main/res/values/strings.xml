@@ -7,8 +7,8 @@
     <string name="pref_location_key" translatable="false">pref_location</string>
     <string name="pref_location_default_value" translatable="false">524901</string>
     <string name="pref_units_key" translatable="false">pref_units</string>
-    <string name="pref_units_title">Метрика температуры</string>
-    <string name="pref_units_dialog_title">Выберите метрику</string>
+    <string name="pref_units_title">Единицы измерения</string>
+    <string name="pref_units_dialog_title">Выберите еденицу измерения</string>
 
     <string name="pref_units_default_value">metric</string>
     <string name="action_map">Map Location</string>
