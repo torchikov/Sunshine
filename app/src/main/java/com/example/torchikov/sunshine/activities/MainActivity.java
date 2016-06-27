@@ -1,19 +1,23 @@
 package com.example.torchikov.sunshine.activities;
 
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
+import com.example.torchikov.sunshine.fragments.DetailFragment;
 import com.example.torchikov.sunshine.fragments.ForecastFragment;
 import com.example.torchikov.sunshine.R;
 import com.example.torchikov.sunshine.dataSet.WeatherDataSet;
 
-public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback {
+public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback, DetailFragment.Callback {
     public static final String EXTRA_FORECAST = "forecast";
+    private static final String DETAIL_FRAGMENT_TAG = "DFTAG";
+
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,24 +30,35 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setLogo(R.drawable.ic_logo);
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentById(R.id.fragment_container);
+        if (findViewById(R.id.weather_detail_container) != null){
+            mTwoPane = true;
 
-        if (fragment == null) {
-            fragment = new ForecastFragment();
-            fragmentManager.beginTransaction().add(R.id.fragment_container, fragment).commit();
+            if (savedInstanceState == null){
+                WeatherDataSet weather = (WeatherDataSet) getIntent().getSerializableExtra(EXTRA_FORECAST);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.weather_detail_container, DetailFragment.newInstance(weather), DETAIL_FRAGMENT_TAG).commit();
+            }
+        }else {
+            mTwoPane = false;
         }
 
     }
 
     @Override
     public void openWeatherDetail(WeatherDataSet weather) {
-        startActivity(DetailActivity.newIntent(this, weather));
+        if (!mTwoPane) {
+            startActivity(DetailActivity.newIntent(this, weather));
+        }else {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.weather_detail_container, DetailFragment.newInstance(weather), DETAIL_FRAGMENT_TAG);
+        }
     }
 
     @Override
     public void openSettings() {
-        Intent intent = SettingsActivity.newIntent(this);
-        startActivity(intent);
+        if (!mTwoPane) {
+            Intent intent = SettingsActivity.newIntent(this);
+            startActivity(intent);
+        }
     }
 }

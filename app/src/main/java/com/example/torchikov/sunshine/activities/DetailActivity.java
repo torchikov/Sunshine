@@ -19,15 +19,11 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentById(R.id.container);
-
-        if (fragment == null){
+        if(savedInstanceState == null) {
             WeatherDataSet weather = (WeatherDataSet) getIntent().getSerializableExtra(MainActivity.EXTRA_FORECAST);
-            fragment = DetailFragment.newInstance(weather);
-            fragmentManager.beginTransaction().add(R.id.container, fragment).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.weather_detail_container, DetailFragment.newInstance(weather)).commit();
         }
+
 
     }
 

@@ -231,6 +231,7 @@ public class ForecastFragment extends Fragment {
         protected void onPostExecute(List<WeatherDataSet> weathers) {
 
             if (!weathers.isEmpty()) {
+
                 mWeathers.addAll(weathers);
                 mAdapter.notifyDataSetChanged();
             }

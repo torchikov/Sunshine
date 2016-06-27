@@ -23,6 +23,8 @@ import com.example.torchikov.sunshine.activities.MainActivity;
 import com.example.torchikov.sunshine.dataSet.WeatherDataSet;
 import com.example.torchikov.sunshine.utils.Utils;
 
+import java.util.Date;
+
 
 public class DetailFragment extends Fragment {
     private static final String LOG_TAG = DetailFragment.class.getSimpleName();
@@ -66,37 +68,51 @@ public class DetailFragment extends Fragment {
 
         if (getArguments() != null && getArguments().getSerializable(MainActivity.EXTRA_FORECAST) != null) {
             mWeather = (WeatherDataSet) getArguments().getSerializable(MainActivity.EXTRA_FORECAST);
+        }else {
+            mWeather = new WeatherDataSet();
+            mWeather.setDate(new Date());
+            mWeather.setForecast("DummySunny");
+            mWeather.setHighTemperature("18");
+            mWeather.setHumidity(67);
+            mWeather.setLowTemperature("15");
+            mWeather.setPressure(1014);
+            mWeather.setWeatherId(800);
+            mWeather.setWindDirection("S");
+            mWeather.setWindSpeed(15);
         }
-        mDayTextView = (TextView) rootView.findViewById(R.id.fragment_detail_day_textview);
-        mDayTextView.setText(Utils.getDayName(getActivity(), mWeather.getDate()));
 
-        mDateTextView = (TextView) rootView.findViewById(R.id.fragment_detail_date_textview);
-        mDateTextView.setText(Utils.getFormattedMonthDay(getActivity(), mWeather.getDate()));
+        if (mWeather != null) {
+            mDayTextView = (TextView) rootView.findViewById(R.id.fragment_detail_day_textview);
+            mDayTextView.setText(Utils.getDayName(getActivity(), mWeather.getDate()));
 
-        mHighTextView = (TextView) rootView.findViewById(R.id.fragment_detail_high_textview);
-        mHighTextView.setText(mWeather.getHighTemperature());
+            mDateTextView = (TextView) rootView.findViewById(R.id.fragment_detail_date_textview);
+            mDateTextView.setText(Utils.getFormattedMonthDay(getActivity(), mWeather.getDate()));
 
-        mLowTextView = (TextView) rootView.findViewById(R.id.fragment_detail_low_textview);
-        mLowTextView.setText(mWeather.getLowTemperature());
+            mHighTextView = (TextView) rootView.findViewById(R.id.fragment_detail_high_textview);
+            mHighTextView.setText(mWeather.getHighTemperature());
 
-        mIconImageView = (ImageView) rootView.findViewById(R.id.fragment_detail_icon_imageview);
-        Drawable drawable = getResources().getDrawable(Utils.getArtResourceForWeatherCondition(mWeather.getWeatherId()));
-        mIconImageView.setImageDrawable(drawable);
+            mLowTextView = (TextView) rootView.findViewById(R.id.fragment_detail_low_textview);
+            mLowTextView.setText(mWeather.getLowTemperature());
 
-        mForecastTextView = (TextView) rootView.findViewById(R.id.fragment_detail_forecast_textview);
-        mForecastTextView.setText(mWeather.getForecast());
+            mIconImageView = (ImageView) rootView.findViewById(R.id.fragment_detail_icon_imageview);
+            Drawable drawable = getResources().getDrawable(Utils.getArtResourceForWeatherCondition(mWeather.getWeatherId()));
+            mIconImageView.setImageDrawable(drawable);
 
-        mHumidityTextView = (TextView) rootView.findViewById(R.id.fragment_detail_humidity_textview);
-        String humidity = String.format(getString(R.string.format_humidity), mWeather.getHumidity(), "%");
-        mHumidityTextView.setText(humidity);
+            mForecastTextView = (TextView) rootView.findViewById(R.id.fragment_detail_forecast_textview);
+            mForecastTextView.setText(mWeather.getForecast());
 
-        mWindTextView = (TextView) rootView.findViewById(R.id.fragment_detail_wind_textview);
-        String windSpeed = String.format(getString(R.string.format_wind_speed_and_direction), mWeather.getWindSpeed(), mWeather.getWindDirection());
-        mWindTextView.setText(windSpeed);
+            mHumidityTextView = (TextView) rootView.findViewById(R.id.fragment_detail_humidity_textview);
+            String humidity = String.format(getString(R.string.format_humidity), mWeather.getHumidity(), "%");
+            mHumidityTextView.setText(humidity);
 
-        mPressureTextView = (TextView) rootView.findViewById(R.id.fragment_detail_pressure_textview);
-        String pressure = String.format(getString(R.string.format_pressure), mWeather.getPressure());
-        mPressureTextView.setText(pressure);
+            mWindTextView = (TextView) rootView.findViewById(R.id.fragment_detail_wind_textview);
+            String windSpeed = String.format(getString(R.string.format_wind_speed_and_direction), mWeather.getWindSpeed(), mWeather.getWindDirection());
+            mWindTextView.setText(windSpeed);
+
+            mPressureTextView = (TextView) rootView.findViewById(R.id.fragment_detail_pressure_textview);
+            String pressure = String.format(getString(R.string.format_pressure), mWeather.getPressure());
+            mPressureTextView.setText(pressure);
+        }
 
         return rootView;
     }
