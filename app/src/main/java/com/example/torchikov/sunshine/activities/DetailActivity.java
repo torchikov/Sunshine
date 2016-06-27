@@ -20,17 +20,24 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
         setContentView(R.layout.activity_detail);
 
         if(savedInstanceState == null) {
-            WeatherDataSet weather = (WeatherDataSet) getIntent().getSerializableExtra(MainActivity.EXTRA_FORECAST);
-            getSupportFragmentManager().beginTransaction().add(R.id.weather_detail_container, DetailFragment.newInstance(weather)).commit();
+            int dayNum = getIntent().getIntExtra(MainActivity.EXTRA_FORECAST, -1);
+
+            if (dayNum >= 0) {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.weather_detail_container, DetailFragment.newInstance(dayNum)).commit();
+            }else {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.weather_detail_container, DetailFragment.newInstance()).commit();
+            }
         }
 
 
     }
 
 
-    public static Intent newIntent(Context context, WeatherDataSet weather){
+    public static Intent newIntent(Context context, int dayNum){
         Intent intent = new Intent(context, DetailActivity.class);
-        intent.putExtra(MainActivity.EXTRA_FORECAST, weather);
+        intent.putExtra(MainActivity.EXTRA_FORECAST, dayNum);
         return intent;
     }
 

@@ -8,13 +8,11 @@
     android:orientation="horizontal"
     tools:context=".activities.MainActivity">
 
-    <fragment
-        android:id="@+id/fragment_forecast"
-        android:name="com.example.torchikov.sunshine.fragments.ForecastFragment"
+    <FrameLayout
+        android:id="@+id/fragment_forecast_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        tools:layout="@android:layout/list_content" />
+        android:layout_weight="1" />
 
     <FrameLayout
         android:id="@+id/weather_detail_container"

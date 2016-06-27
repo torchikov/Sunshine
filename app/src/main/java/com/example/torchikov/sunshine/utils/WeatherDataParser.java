@@ -20,7 +20,7 @@ import java.util.List;
 public class WeatherDataParser {
     private static final String LOG_TAG = WeatherDataParser.class.getSimpleName();
 
-    public List<WeatherDataSet> getWeatherDataFromJson(Context context, String jsonString, int numDays) throws JSONException {
+    public List<WeatherDataSet> getWeatherDataFromJson(Context context, String jsonString) throws JSONException {
         List<WeatherDataSet> result = new ArrayList<>();
         final String OWN_LIST = "list";
         final String OWN_WEATHER = "weather";

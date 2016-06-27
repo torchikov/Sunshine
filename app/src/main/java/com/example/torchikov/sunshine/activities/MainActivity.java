@@ -30,35 +30,41 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setLogo(R.drawable.ic_logo);
 
+
+
+
         if (findViewById(R.id.weather_detail_container) != null){
             mTwoPane = true;
 
             if (savedInstanceState == null){
-                WeatherDataSet weather = (WeatherDataSet) getIntent().getSerializableExtra(EXTRA_FORECAST);
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.weather_detail_container, DetailFragment.newInstance(weather), DETAIL_FRAGMENT_TAG).commit();
+                        .replace(R.id.weather_detail_container, DetailFragment.newInstance(), DETAIL_FRAGMENT_TAG).commit();
             }
         }else {
             mTwoPane = false;
         }
 
+        if (savedInstanceState == null){
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_forecast_container, ForecastFragment.newInstance(mTwoPane)).commit();
+        }
+
     }
 
     @Override
-    public void openWeatherDetail(WeatherDataSet weather) {
+    public void openWeatherDetail(int dayNum) {
         if (!mTwoPane) {
-            startActivity(DetailActivity.newIntent(this, weather));
+            startActivity(DetailActivity.newIntent(this, dayNum));
         }else {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.weather_detail_container, DetailFragment.newInstance(weather), DETAIL_FRAGMENT_TAG);
+                    .replace(R.id.weather_detail_container, DetailFragment.newInstance(dayNum), DETAIL_FRAGMENT_TAG).commit();
         }
     }
 
     @Override
     public void openSettings() {
-        if (!mTwoPane) {
             Intent intent = SettingsActivity.newIntent(this);
             startActivity(intent);
-        }
+
     }
 }

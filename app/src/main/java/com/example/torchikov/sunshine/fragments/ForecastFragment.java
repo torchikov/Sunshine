@@ -2,20 +2,15 @@ package com.example.torchikov.sunshine.fragments;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,40 +22,45 @@ import android.widget.TextView;
 
 import com.example.torchikov.sunshine.R;
 import com.example.torchikov.sunshine.dataSet.WeatherDataSet;
+import com.example.torchikov.sunshine.listeners.DataLoadSuccessfullyListener;
 import com.example.torchikov.sunshine.utils.Utils;
-import com.example.torchikov.sunshine.utils.WeatherDataParser;
+import com.example.torchikov.sunshine.utils.WeatherLab;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
-import org.json.JSONException;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 
-public class ForecastFragment extends Fragment {
+public class ForecastFragment extends Fragment implements DataLoadSuccessfullyListener {
     private static final String LOG_TAG = ForecastFragment.class.getSimpleName();
-    private static final String API_KEY = ""; //Your API key
-    private static final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
+    private static final String IS_TWO_PANE_ARG = "two_pane";
 
 
     private Callback mCallback;
     private RecyclerView mRecyclerView;
-    private List<WeatherDataSet> mWeathers = new ArrayList<>();
     private ForecastAdapter mAdapter;
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
-    private String mLatitude;
-    private String mLongitude;
+    private boolean mTwoPane;
+
+    public static ForecastFragment newInstance(boolean isTwoPane) {
+        ForecastFragment fragment = new ForecastFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(IS_TWO_PANE_ARG, isTwoPane);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+
+    @Override
+    public void updateUI() {
+        mAdapter.setWeathers(WeatherLab.getInstance(getActivity()).getWeathers());
+        mAdapter.notifyDataSetChanged();
+    }
+
 
     public interface Callback {
-        void openWeatherDetail(WeatherDataSet weather);
+        void openWeatherDetail(int dayNum);
 
         void openSettings();
     }
@@ -72,10 +72,14 @@ public class ForecastFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+
+
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.fragment_forecast_recyclerview);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        mAdapter = new ForecastAdapter(mWeathers);
+
+        mAdapter = new ForecastAdapter();
+        mAdapter.setWeathers(WeatherLab.getInstance(getActivity()).getWeathers());
         mRecyclerView.setAdapter(mAdapter);
 
 
@@ -86,6 +90,8 @@ public class ForecastFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        WeatherLab.getInstance(getActivity()).subscribeToDataChanges(this);
 
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
@@ -100,11 +106,10 @@ public class ForecastFragment extends Fragment {
                             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
                             if (mLastLocation != null) {
-                                mLatitude = String.valueOf(mLastLocation.getLatitude());
-                                mLongitude = String.valueOf(mLastLocation.getLongitude());
+                                WeatherLab.getInstance(getActivity()).setLatitude(String.valueOf(mLastLocation.getLatitude()));
+                                WeatherLab.getInstance(getActivity()).setLongitude(String.valueOf(mLastLocation.getLongitude()));
+                                WeatherLab.getInstance(getActivity()).loadForecastData();
                             }
-                            updateWeather();
-
                         }
 
                         @Override
@@ -115,12 +120,15 @@ public class ForecastFragment extends Fragment {
                     .build();
         }
 
+        mTwoPane = getArguments().getBoolean(IS_TWO_PANE_ARG);
 
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.forecast_fragment, menu);
+        if (!mTwoPane) {
+            inflater.inflate(R.menu.forecast_fragment, menu);
+        }
     }
 
     @Override
@@ -135,109 +143,6 @@ public class ForecastFragment extends Fragment {
     }
 
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, List<WeatherDataSet>> {
-        private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
-
-        @Override
-        protected List<WeatherDataSet> doInBackground(String... params) {
-
-            if (params.length == 0) {
-                return null;
-            }
-
-            List<WeatherDataSet> weathers = new ArrayList<>();
-
-            String format = "json";
-            String units = params[0];
-            int numDays = 7;
-            String langRus = "ru";
-
-
-            final String LOCATION_LATITUDE = "lat";
-            final String LOCATION_LONGITUDE = "lon";
-            final String FORMAT_PARAM = "mode";
-            final String UNITS_PARAM = "units";
-            final String DAYS_PARAM = "cnt";
-            final String APPID_PARAM = "APPID";
-            final String LANGUAGE = "lang";
-
-            Uri builtUri = Uri.parse(BASE_URL).buildUpon()
-                    .appendQueryParameter(LANGUAGE, langRus)
-                    .appendQueryParameter(LOCATION_LATITUDE, mLatitude)
-                    .appendQueryParameter(LOCATION_LONGITUDE, mLongitude)
-                    .appendQueryParameter(FORMAT_PARAM, format)
-                    .appendQueryParameter(UNITS_PARAM, units)
-                    .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                    .appendQueryParameter(APPID_PARAM, API_KEY)
-                    .build();
-
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            String forecastJSON = null;
-
-            try {
-                URL url = new URL(builtUri.toString());
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuilder buffer = new StringBuilder();
-
-                if (inputStream == null) {
-                    return null;
-                }
-
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    return null;
-                }
-
-                forecastJSON = buffer.toString();
-
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error", e);
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            try {
-                weathers = new WeatherDataParser().getWeatherDataFromJson(getActivity(), forecastJSON, numDays);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, "Error parsing JSON", e);
-            }
-            return weathers;
-        }
-
-        @Override
-        protected void onPostExecute(List<WeatherDataSet> weathers) {
-
-            if (!weathers.isEmpty()) {
-
-                mWeathers.addAll(weathers);
-                mAdapter.notifyDataSetChanged();
-            }
-        }
-    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -248,20 +153,6 @@ public class ForecastFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mCallback = null;
-    }
-
-
-    private void updateWeather() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String defaultUnits = getResources().getString(R.string.pref_units_default_value);
-        String units = preferences.getString(getString(R.string.pref_units_key), defaultUnits);
-        String unitsRes;
-        if (units.equals("Цельсий")){
-            unitsRes = "metric";
-        } else {
-            unitsRes = "imperial";
-        }
-        new FetchWeatherTask().execute(unitsRes);
     }
 
 
@@ -290,10 +181,14 @@ public class ForecastFragment extends Fragment {
             mWeather = weather;
             Drawable drawable = null;
 
-            if (position == 0) {
-                drawable = getResources().getDrawable(Utils.getArtResourceForWeatherCondition(mWeather.getWeatherId()));
-            } else {
+            if (mTwoPane) {
                 drawable = getResources().getDrawable(Utils.getIconResourceForWeatherCondition(mWeather.getWeatherId()));
+            } else {
+                if (position == 0) {
+                    drawable = getResources().getDrawable(Utils.getArtResourceForWeatherCondition(mWeather.getWeatherId()));
+                } else {
+                    drawable = getResources().getDrawable(Utils.getIconResourceForWeatherCondition(mWeather.getWeatherId()));
+                }
             }
 
             mIconImageView.setImageDrawable(drawable);
@@ -305,7 +200,7 @@ public class ForecastFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            mCallback.openWeatherDetail(mWeather);
+            mCallback.openWeatherDetail(WeatherLab.getInstance(getActivity()).getWeathers().indexOf(mWeather));
         }
     }
 
@@ -314,9 +209,10 @@ public class ForecastFragment extends Fragment {
         private final int VIEW_TYPE_FUTURE_DAY = 1;
         private List<WeatherDataSet> mWeathers;
 
-        public ForecastAdapter(List<WeatherDataSet> weathers) {
+        public void setWeathers(List<WeatherDataSet> weathers) {
             mWeathers = weathers;
         }
+
 
         @Override
         public ForecastHolder onCreateViewHolder(ViewGroup parent, int viewType) {
