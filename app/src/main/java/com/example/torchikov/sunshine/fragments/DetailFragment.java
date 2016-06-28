@@ -1,6 +1,8 @@
 package com.example.torchikov.sunshine.fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,25 +47,31 @@ public class DetailFragment extends Fragment implements DataLoadSuccessfullyList
     private TextView mPressureTextView;
     private WeatherDataSet mWeather;
 
+
     @Override
     public void updateUI() {
-        if (mWeather == null) {
-            mWeather = WeatherLab.getInstance(getActivity()).getForecastByDay(0);
+        if (isAdded()) {
+
+            if (mWeather == null) {
+                mWeather = WeatherLab.getInstance(getActivity()).getForecastByDay(0);
+            }
+
+            mDayTextView.setText(Utils.getDayName(getActivity(), mWeather.getDate()));
+            mDateTextView.setText(Utils.getFormattedMonthDay(getActivity(), mWeather.getDate()));
+            mHighTextView.setText(mWeather.getHighTemperature());
+            mLowTextView.setText(mWeather.getLowTemperature());
+
+            Drawable drawable = getResources().getDrawable(Utils.getArtResourceForWeatherCondition(mWeather.getWeatherId()));
+            mIconImageView.setImageDrawable(drawable);
+            mForecastTextView.setText(mWeather.getForecast());
+            String humidity = String.format(getString(R.string.format_humidity), mWeather.getHumidity(), "%");
+            mHumidityTextView.setText(humidity);
+            String windSpeed = String.format(getString(R.string.format_wind_speed_and_direction), mWeather.getWindSpeed(), mWeather.getWindDirection());
+            mWindTextView.setText(windSpeed);
+            String pressure = String.format(getString(R.string.format_pressure), mWeather.getPressure());
+            mPressureTextView.setText(pressure);
+            getActivity().invalidateOptionsMenu();
         }
-        mDayTextView.setText(Utils.getDayName(getActivity(), mWeather.getDate()));
-        mDateTextView.setText(Utils.getFormattedMonthDay(getActivity(), mWeather.getDate()));
-        mHighTextView.setText(mWeather.getHighTemperature());
-        mLowTextView.setText(mWeather.getLowTemperature());
-        Drawable drawable = getResources().getDrawable(Utils.getArtResourceForWeatherCondition(mWeather.getWeatherId()));
-        mIconImageView.setImageDrawable(drawable);
-        mForecastTextView.setText(mWeather.getForecast());
-        String humidity = String.format(getString(R.string.format_humidity), mWeather.getHumidity(), "%");
-        mHumidityTextView.setText(humidity);
-        String windSpeed = String.format(getString(R.string.format_wind_speed_and_direction), mWeather.getWindSpeed(), mWeather.getWindDirection());
-        mWindTextView.setText(windSpeed);
-        String pressure = String.format(getString(R.string.format_pressure), mWeather.getPressure());
-        mPressureTextView.setText(pressure);
-        getActivity().invalidateOptionsMenu();
 
     }
 
@@ -195,5 +203,15 @@ public class DetailFragment extends Fragment implements DataLoadSuccessfullyList
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, forecastString + FORECAST_SHARE_HASHTAG);
         return shareIntent;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
     }
 }

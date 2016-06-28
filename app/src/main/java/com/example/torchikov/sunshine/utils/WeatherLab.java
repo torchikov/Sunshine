@@ -26,7 +26,7 @@ import java.util.List;
 
 public class WeatherLab {
     private static final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
-    private static final String API_KEY = "4bf7a51e8e1994d49b303213d9700041"; //Your API key
+    private static final String API_KEY = ""; //Your API key
 
     private List<DataLoadSuccessfullyListener> mListeners = new LinkedList<>();
     private static WeatherLab sInstance;
